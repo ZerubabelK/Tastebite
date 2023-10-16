@@ -1,0 +1,21 @@
+version: "3"
+services:
+  postgres:
+    image: postgres:latest
+    environment:
+      POSTGRES_PASSWORD: cNPDdsrl3K6p
+    restart: always
+  hasura:
+    image: hasura/graphql-engine:latest
+    ports:
+      - "8080:8080"
+    depends_on:
+      - "postgres"
+    restart: always
+    environment:
+      HASURA_GRAPHQL_DATABASE_URL: postgres://zerubabelkassahun116:cNPDdsrl3K6p@square-poetry-450330.us-west-2.aws.neon.tech/possible-shepherd-77_db_2861468?options=project%3Dsquare-poetry-450330&sslmode=require
+      HASURA_GRAPHQL_ENABLE_CONSOLE: true
+      HASURA_GRAPHQL_ADMIN_SECRET: upy4WuKk77Nxig4ZRYL3q7NwmF14arft07VklaFIxOcRWTLFr6jMQrvTkFn8xZpy
+      HASURA_GRAPHQL_UNAUTHORIZED_ROLE: anonymous
+      HASURA_GRAPHQL_JWT_SECRET: '{"key": "8594e9d1a205b93ec8119299fa6cbf98285b0d70539bf564bf2557ce4e929414d1ae12a211a5168cc3c240f5efb5e4325dbad8d45e8caec465b05c280a8be3b5","type": "HS256"}'
+      PG_DATABASE_URL: postgres://zerubabelkassahun116:cNPDdsrl3K6p@square-poetry-450330.us-west-2.aws.neon.tech/possible-shepherd-77_db_2861468?options=project%3Dsquare-poetry-450330&sslmode=require
