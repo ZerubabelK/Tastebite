@@ -1,11 +1,13 @@
 import { H3Event, parseCookies } from "h3";
 import jwtDecode from "jwt-decode";
 import { User } from "~/types";
+
 export const useUserStore = defineStore("user", {
   state: () => ({
     user: {} as User,
     isHydrating: false,
     notifications: [],
+    error: null,
   }),
   getters: {
     getUser: (state) => state.user,
@@ -17,6 +19,9 @@ export const useUserStore = defineStore("user", {
     },
     setNotifications(notifications: any) {
       this.notifications = notifications;
+    },
+    setError(error: any) {
+      this.setError(error);
     },
     async boot(event: H3Event) {
       const cookies = parseCookies(event);
@@ -33,6 +38,13 @@ export const useUserStore = defineStore("user", {
                 first_name
                 last_name
                 profile_image
+                bookmarks {
+                  id
+                  user_id
+                  recipe {
+                    id
+                  }
+                }
               }
             }
           `;
@@ -46,9 +58,11 @@ export const useUserStore = defineStore("user", {
               id: payload["https://hasura.io/jwt/claims"]["x-hasura-user-id"],
             },
           });
-
           if (status.value === "success") {
             this.setUser(data.value!.user_by_pk);
+            this.setError(null);
+          } else {
+            this.setError(error);
           }
           this.isHydrating = false;
         }

@@ -1,11 +1,48 @@
 <template>
-  <div class="mt-10">
-    <div v-if="recipe">
-      <div class="grid grid-cols-1 lg:grid-cols-5 lg:gap-x-6">
-        <div class="lg:col-span-2 space-y-2">
+  <div>
+    <div v-if="recipe" class="space-y-6">
+      <div class="lg:col-span-2 space-y-2" v-if="isNew">
+        <div class="mt-10">
+          <img
+            v-if="recipe.images.length > 0"
+            :src="
+              recipe.images.length > 0 &&
+              recipe.images.filter((image) => image.is_thumbnail)[0].image_url
+            "
+            class="rounded-lg"
+          />
+        </div>
+        <div>
+          <div class="grid grid-cols-3 gap-2">
+            <div
+              v-for="(image, index) in recipe.images.filter(
+                (image) => !image.is_thumbnail
+              )"
+              :key="index"
+              class="relative"
+            >
+              <img
+                v-if="image.image_url"
+                :src="image.image_url"
+                class="aspect-video object-cover rounded-lg"
+              />
+              <span
+                class="w-full h-full bg-opacity-50 bg-neutral-700 absolute top-0 left-0 rounded-lg"
+              ></span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div
+        class="grid grid-cols-1 lg:grid-cols-5 lg:gap-x-6 lg:gap-y-0 gap-y-6"
+      >
+        <div class="lg:col-span-2 space-y-2" v-if="!isNew">
           <div class="mt-10">
             <img
-              :src="recipe.images && recipe.images[0].image_url"
+              :src="
+                recipe.images.length > 0 &&
+                recipe.images.filter((image) => image.is_thumbnail)[0].image_url
+              "
               alt="recipe cover image"
               class="rounded-lg"
             />
@@ -13,7 +50,9 @@
           <div>
             <div class="grid grid-cols-3 gap-2">
               <div
-                v-for="(image, index) in recipe.images.slice(1)"
+                v-for="(image, index) in recipe.images.filter(
+                  (image) => !image.is_thumbnail
+                )"
                 :key="index"
                 class="relative"
               >
@@ -29,8 +68,8 @@
             </div>
           </div>
         </div>
-        <div class="lg:col-span-3 space-y-3">
-          <h2 class="lg:text-3xl font-bold">{{ recipe.title }}</h2>
+        <div class="lg:col-span-3 space-y-3" :class="'lg:col-span-5'">
+          <h2 class="lg:text-3xl text-xl font-bold">{{ recipe.title }}</h2>
           <div class="flex justify-between">
             <div class="flex items-center gap-3">
               <Icon
@@ -48,7 +87,7 @@
                 }}
               </p>
             </div>
-            <div class="flex flex-row gap-2 bg-white">
+            <div class="flex flex-row gap-2 bg-white" v-if="!isNew">
               <span class="relative">
                 <Icon
                   v-if="is_liked"
@@ -88,24 +127,24 @@
             </div>
           </div>
           <div>
-            <NuxtRating :read-only="true" :ratingValue="3" class="text-lg" />
+            <NuxtRating
+              :read-only="true"
+              :ratingValue="recipe.rating ? recipe.rating.length : 0"
+              class="text-lg"
+            />
           </div>
           <div>
             <p>
-              Donuts, also known as doughnuts, are a popular type of fried or
-              baked pastry. They are typically round with a hole in the center,
-              though there are various shapes and flavors available. The dough
-              is made from ingredients like flour, sugar, yeast, and often eggs
-              and milk, resulting in a soft and slightly sweet texture. Donuts
-              are commonly enjoyed as a breakfast treat or a snack, and they
-              have become a beloved staple of many cuisines around the world.
+              {{ recipe.description }}
             </p>
           </div>
         </div>
       </div>
-      <div class="grid grid-cols-1 lg:grid-cols-5 lg:gap-x-6">
+      <div
+        class="grid grid-cols-1 lg:grid-cols-5 lg:gap-x-6 gap-y-6 lg:gap-y-0s"
+      >
         <div class="col-span-2">
-          <h3>Ingredients</h3>
+          <h3 class="font-bold text-xl">Ingredients</h3>
           <ul>
             <li
               v-for="(ingredient, index) in recipe.ingredients"
@@ -113,30 +152,26 @@
               class="flex items-center gap-1"
             >
               <span><Icon name="tabler:point-filled" /></span>
-              <span>{{ ingredient.unit && ingredient.unit + " of " }}</span>
-              <span>{{ ingredient.quantity }}</span>
-              {{ ingredient.name }}
+              <span class="text-neutral-600">
+                {{ ingredient.quantity }} {{ ingredient.unit }} of
+                {{ ingredient.name }}
+              </span>
             </li>
           </ul>
         </div>
         <div class="col-span-3">
-          <h3>Steps</h3>
+          <h3 class="font-bold text-xl">Steps</h3>
           <ol>
-            <li v-for="(step, index) in recipe.instructions" :key="index">
+            <li v-for="(step, index) in recipe.steps" :key="index">
               <span>Step {{ index + 1 }}. </span>
-              {{ step }}
+              {{ step.description }}
             </li>
           </ol>
         </div>
       </div>
     </div>
     <div v-else>
-      <div class="animate-pulse">
-        <div
-          class="bg-gray-300 h-[300px] w-full rounded-lg"
-          style="height: 300px"
-        ></div>
-      </div>
+      <Loading />
     </div>
   </div>
 </template>
@@ -175,7 +210,7 @@ if (recipe.bookmarks && recipe.bookmarks.length > 0) {
   });
 }
 
-if (recipe.likes.length > 0) {
+if (recipe.likes && recipe.likes.length > 0) {
   recipe.likes.forEach((like: any) => {
     if (like.user_id === user.value.id) {
       is_liked.value = true;
@@ -186,7 +221,7 @@ if (recipe.likes.length > 0) {
 const getLikeId = () => {
   let like_id = "";
 
-  if (user) {
+  if (user && recipe.likes) {
     recipe.likes.forEach((like: any) => {
       if (like.user_id === user.value.id) {
         like_id = like.id;

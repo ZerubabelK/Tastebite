@@ -12,6 +12,9 @@ interface ValidationFields {
   ingredient_unit?: any;
   instruction_description?: any;
   category_name?: any;
+  description?: any;
+  unit?: any;
+  amount?: any;
 }
 export default function () {
   const errors = ref<Error[]>([]);
@@ -127,6 +130,21 @@ export default function () {
       if (fields.unit && fields.unit.match(/^[a-zA-Z]+$/)) {
         errors.value = errors.value.filter(
           (error) => error.field !== "ingredient_unit"
+        );
+      }
+      if (fields.description && fields.description.length < 10) {
+        if (
+          errors.value.filter((error) => error.field === "description")
+            .length === 0
+        )
+          errors.value.push({
+            field: "description",
+            message: "Description must be at least 10 characters long",
+          });
+      }
+      if (fields.description && fields.description.length >= 10) {
+        errors.value = errors.value.filter(
+          (error) => error.field !== "description"
         );
       }
       console.log(errors);

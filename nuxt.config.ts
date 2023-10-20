@@ -1,6 +1,19 @@
 // https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
   devtools: { enabled: true },
+  ssr: true,
+  runtimeConfig: {
+    public: {
+      vueuse: {
+        // enable/disable functions
+        useWebNotification: true,
+        // ...other functions
+      },
+    },
+  },
+  devServer: {
+    port: 8000,
+  },
   app: {
     head: {
       link: [{ rel: "icon", type: "image/x-icon", href: "/favicon.webp" }],
@@ -20,6 +33,7 @@ export default defineNuxtConfig({
     "nuxt-icon",
     "nuxt-rating",
     "@vee-validate/nuxt",
+    "@vueuse/nuxt",
   ],
   apollo: {
     autoImports: true,

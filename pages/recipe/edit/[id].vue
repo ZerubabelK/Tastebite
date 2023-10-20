@@ -8,7 +8,7 @@
           excited to see what you have to offer!
         </p>
       </div>
-      <div class="mt-5">
+      <div class="mt-5" v-if="!loading">
         <VeeForm
           schema
           @submit.prevent
@@ -57,14 +57,25 @@
                       <label class="text-base" for="cook_time"
                         >Categories</label
                       >
-                      <input
-                        type="text"
-                        name="categories"
-                        id="categories"
-                        placeholder="Enter recipe categories"
-                        class="w-full border border-neutral-300 rounded-lg px-3 py-2 focus:outline-none"
-                        v-model="category"
-                      />
+                      <div class="relative">
+                        <input
+                          type="text"
+                          name="categories"
+                          id="categories"
+                          placeholder="Enter recipe categories"
+                          class="w-full border border-neutral-300 rounded-lg px-3 py-2 focus:outline-none"
+                          v-model="category"
+                        />
+                        <Icon
+                          name="carbon:chevron-down"
+                          size="16px"
+                          class="absolute top-3.5 right-2 cursor-pointer"
+                          @click="handleCategoryToggle"
+                          :class="
+                            openCategoryOption ? 'transform rotate-180' : ''
+                          "
+                        />
+                      </div>
                       <p
                         v-if="checkError('categories')"
                         class="text-red-400 text-sm"
@@ -85,7 +96,7 @@
                           >
                             <p class="flex items-center">
                               <span class="text-neutral-600">
-                                {{ category }}
+                                {{ category.category }}
                               </span>
                               <span class="ml-2 cursor-pointer">
                                 <Icon
@@ -93,7 +104,8 @@
                                   size="18px"
                                   class="text-primary bg-white transform hover:scale-150 transition-all h-max w-max rounded-full"
                                   @click="
-                                    (e) => handleCategoryRemove(e, category)
+                                    (e) =>
+                                      handleCategoryRemove(e, category.category)
                                   "
                                 />
                               </span>
@@ -210,17 +222,17 @@
                     <div v-else class="grid grid-cols-5 gap-3">
                       <div
                         v-for="image in images"
-                        :key="image.toString()"
+                        :key="image.image_url.toString()"
                         class="relative h-max cursor-pointer"
                       >
                         <img
-                          :src="image.toString()"
+                          :src="image.image_url.toString()"
                           alt="recipe image"
                           class="aspect-video object-cover w-32 rounded-lg"
-                          @click="handleThumbnailChange(image.toString())"
+                          @click="handleThumbnailChange(image.image_url)"
                         />
                         <span
-                          v-if="thumbnail.toString() === image.toString()"
+                          v-if="thumbnail?.image_url === image.image_url"
                           class="bg-opacity-50 bg-black absolute w-full h-full z-10 top-0 left-0 rounded-lg flex items-center justify-center"
                         >
                           <Icon
@@ -231,8 +243,10 @@
                         </span>
                         <button
                           type="button"
-                          class="absolute -top-3 -right-1 z-20 transform hover:scale-150 transition-all h-max w-max rounded-full"
-                          @click="(e) => removeSelectedImage(e, image)"
+                          class="absolute -top-3 -right-1 transform hover:scale-150 transition-all h-max w-max rounded-full z-10"
+                          @click="
+                            (e) => removeSelectedImage(e, image.image_url)
+                          "
                         >
                           <Icon
                             name="carbon:close-filled"
@@ -371,8 +385,8 @@
                         >
                           <p class="flex items-center">
                             <span class="text-neutral-600">
-                              {{ ingredient.ingredient_name }} -
-                              {{ ingredient.amount }}
+                              {{ ingredient.amount }} {{ ingredient.unit }} of
+                              {{ ingredient.ingredient_name }}
                             </span>
                             <span
                               class="ml-2 cursor-pointer"
@@ -383,7 +397,7 @@
                               <Icon
                                 name="carbon:close-filled"
                                 size="18px"
-                                class="text-primary bg-white transform hover:scale-150 transition-all h-max w-max rounded-full"
+                                class="text-primary bg-white transform hover:scale-110 transition-all h-max w-max rounded-full"
                               />
                             </span>
                           </p>
@@ -452,7 +466,7 @@
                         class="text-base flex gap-1 items-center justify-between bg-opacity-70 rounded-lg px-2 py-1 bg-slate-100"
                       >
                         <span class="text-neutral-600 capitalize"
-                          >{{ index + 1 }}. {{ instruction }}</span
+                          >{{ index + 1 }}. {{ instruction.description }}</span
                         >
                         <span>
                           <Icon
@@ -460,7 +474,11 @@
                             size="18px"
                             class="text-primary bg-white transform hover:scale-110 transition-all h-max w-max rounded-full cursor-pointer"
                             @click="
-                              (e) => handleInstructionRemove(e, instruction)
+                              (e) =>
+                                handleInstructionRemove(
+                                  e,
+                                  instruction.description
+                                )
                             "
                           />
                         </span>
@@ -479,7 +497,7 @@
                 </button>
               </div>
             </div>
-            <div class="hidden lg:block pl-5">
+            <div class="lg:pl-5 hidden lg:block">
               <div>
                 <h2 class="capitalize text-2xl font-semibold">Preview</h2>
               </div>
@@ -489,52 +507,39 @@
                     title,
                     description,
                     prep_time,
-                    images: images
-                      .map((image) => {
-                        return {
-                          id: Math.floor(Math.random() * 100000),
-                          image_url: image,
-                          is_thumbnail: false,
-                        };
-                      })
-                      .filter((image) => image.image_url !== thumbnail)
-                      .concat({
-                        id: Math.floor(Math.random() * 100000),
-                        image_url: thumbnail,
-                        is_thumbnail: true,
-                      }),
-                    ingredients: ingredients.map((ingredient) => {
-                      return {
-                        id: Math.floor(Math.random() * 100000),
-                        quantity: ingredient.amount,
-                        name: ingredient.ingredient_name,
-                      };
-                    }),
-                    steps: instructions.map((instruction, index) => {
-                      return {
-                        id: Math.floor(Math.random() * 100000),
-                        number: index + 1,
-                        description: instruction,
-                      };
-                    }),
+                    images,
+                    ingredients,
+                    instructions,
                   }"
-                  :isNew="true"
+                  :isNew="false"
                 />
               </div>
             </div>
           </div>
         </VeeForm>
       </div>
+      <div class="flex items-center justify-center" v-else>
+        <Loading />
+      </div>
     </div>
   </div>
 </template>
 
 <script lang="ts" setup>
+import { useUserStore } from "~/store/user";
+
 definePageMeta({
   middleware: ["auth"],
 });
 
-const { fetchCategories, filteredCategories, publishRecipe } = useRecipe();
+const { user } = useUserStore();
+const {
+  fetchCategories,
+  filteredCategories,
+  updateRecipe,
+  fetchRecipeById,
+  loading,
+} = useRecipe();
 
 const { errors, validate } = useValidate();
 
@@ -553,13 +558,14 @@ const title = ref("");
 const description = ref("");
 const prep_time = ref<number>();
 
-const categories = ref<String[]>([]);
+const categories = ref<{ category: String; id?: String }[]>([]);
 
 const ingredient_name = ref("");
 const amount = ref("");
 const unit = ref("");
 const ingredients = ref<
   {
+    id?: String;
     ingredient_name: String;
     amount: String;
     unit: String;
@@ -567,11 +573,54 @@ const ingredients = ref<
 >([]);
 
 const instruction = ref<String>("");
-const instructions = ref<String[]>([]);
+const instructions = ref<{ description: String; id?: String }[]>([]);
 
-const thumbnail = ref<String>("");
+const thumbnail = ref<{ image_url: String; id?: String }>();
 
-const images = ref<String[]>([]);
+const images = ref<{ image_url: String; id?: String }[]>([]);
+
+const id = useRoute().params.id;
+
+fetchRecipeById(id.toString()).then((data) => {
+  if (!data.error) {
+    if (data.recipe.user.id !== user.id) {
+      navigateTo("/error");
+      throw createError({
+        statusCode: 401,
+        statusMessage: "Unauthorized access",
+      });
+    }
+    title.value = data.recipe.title;
+    description.value = data.recipe.description;
+    prep_time.value = data.recipe.prep_time;
+    ingredients.value = data.recipe.ingredients.map((ing: any) => {
+      return {
+        id: ing.id,
+        ingredient_name: ing.name,
+        amount: ing.quantity,
+        unit: ing.unit,
+      };
+    });
+    instructions.value = data.recipe.steps.map((step: any) => {
+      return { description: step.description, id: step.id };
+    });
+    categories.value = data.recipe.recipe_categories.map((cat: any) => {
+      return { category: cat.category, id: cat.id };
+    });
+    thumbnail.value =
+      data.recipe.images.length > 0
+        ? data.recipe.images.filter((img: any) => img.is_thumbnail)[0]
+        : { image_url: "" };
+    images.value = data.recipe.images.map((img: any) => {
+      return {
+        id: img.id,
+        image_url: img.image_url,
+      };
+    });
+  } else {
+    throw new Error("An error occurred while fetching recipe");
+  }
+});
 
 const handleFileSelect = (e: Event) => {
   const target = e.target as HTMLInputElement;
@@ -583,11 +632,18 @@ const handleFileSelect = (e: Event) => {
       reader.onload = (e) => {
         const dataURL = e.target?.result;
         if (dataURL) {
-          if (!images.value.includes(dataURL.toString())) {
-            images.value.push(dataURL.toString());
+          let flag = false;
+          images.value.forEach((img) => {
+            if (img.image_url === dataURL.toString()) {
+              flag = true;
+              return;
+            }
+          });
+          if (!flag) {
+            images.value.push({ image_url: dataURL.toString() });
           }
-          if (thumbnail.value === "") {
-            thumbnail.value = dataURL.toString();
+          if (thumbnail.value?.image_url === "") {
+            thumbnail.value = { image_url: dataURL.toString() };
           }
         }
       };
@@ -601,14 +657,14 @@ const handleFileEvent = () => {
 };
 
 const handleThumbnailChange = (image: String) => {
-  thumbnail.value = image;
+  thumbnail.value!.image_url = image;
 };
 
 const removeSelectedImage = (e: Event, image: String) => {
   e.stopPropagation();
-  images.value = images.value.filter((img) => img !== image);
-  if (thumbnail.value === image) {
-    thumbnail.value = images.value[0];
+  images.value = images.value.filter((img) => img.image_url !== image);
+  if (thumbnail.value!.image_url === image) {
+    thumbnail.value!.image_url = images.value[0].image_url;
   }
 };
 
@@ -640,37 +696,58 @@ const handleIngredientRemove = (
 
 const handleCategoryRemove = (e: Event, cat: String) => {
   e.stopPropagation();
-  categories.value = categories.value.filter((c) => c !== cat);
+  categories.value = categories.value.filter((c) => c.category !== cat);
 };
 
 const handleAddInstruction = () => {
   validate({
     instruction_description: instruction.value,
   });
-  instructions.value.push(instruction.value);
+  instructions.value.push({ description: instruction.value });
   instruction.value = "";
 };
 
 const handleInstructionRemove = (e: Event, instruction: String) => {
   e.stopPropagation();
   instructions.value = instructions.value.filter(
-    (instr) => instr !== instruction
+    (instr) => instr.description !== instruction
   );
 };
 
+const handleCategoryToggle = () => {
+  openCategoryOption.value = !openCategoryOption.value;
+  if (openCategoryOption.value) {
+    fetchCategories(category.value);
+  }
+};
+
 const handleCategoryOptionSelect = (selectedCategory: String) => {
-  categories.value.push(selectedCategory);
+  if (
+    categories.value.filter((cat) => cat.category === selectedCategory).length >
+    0
+  ) {
+    return;
+  }
+  categories.value.push({ category: selectedCategory });
   openCategoryOption.value = false;
   category.value = "";
 };
 
 const handleSubmit = () => {
-  const base64Images = images.value.map((image) => {
-    const base64 = image.split(",")[1];
-    return base64;
+  const formattedImages = images.value.map((image) => {
+    if (image.image_url.startsWith("http")) {
+      return image.image_url;
+    }
+    return image.image_url.split(",")[1];
   });
 
-  const base64Thumbnail = thumbnail.value.split(",")[1];
+  let base64Thumbnail = "";
+
+  if (thumbnail.value?.image_url.startsWith("http")) {
+    base64Thumbnail = thumbnail.value?.image_url.toString();
+  } else {
+    base64Thumbnail = thumbnail.value?.image_url.split(",")[1].toString() || "";
+  }
 
   validate({
     ingredients: ingredients.value,
@@ -679,8 +756,9 @@ const handleSubmit = () => {
     images: images.value,
     description: description.value,
   });
+  console.log(errors.value);
   if (errors.value.length === 0) {
-    publishRecipe(
+    updateRecipe(
       {
         title: title.value,
         description: description.value,
@@ -689,9 +767,16 @@ const handleSubmit = () => {
         steps: instructions.value,
         categories: categories.value,
       },
-      base64Images,
-      base64Thumbnail
-    );
+      formattedImages,
+      base64Thumbnail,
+      id.toString()
+    ).then((data) => {
+      if (!data.error) {
+        navigateTo(`/recipe/${id}`);
+      } else {
+        throw new Error("An error occurred while updating recipe");
+      }
+    });
   }
 };
 

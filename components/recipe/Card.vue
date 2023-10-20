@@ -6,7 +6,7 @@
       <img
         :src="cover_image || '/test.jpg'"
         :alt="recipe?.title"
-        class="object-cover w-full rounded-t aspect-video h-44"
+        class="object-cover w-full rounded-t aspect-video h-44 md:h-52"
       />
       <div
         class="absolute top-2 right-0 flex flex-col gap-2 p-2 bg-white rounded-l-lg z-10"
@@ -28,10 +28,10 @@
           />
           <span
             class="absolute -top-1 -right-1 bg-primary w-[14px] h-[14px] text-xs p-1 aspect-square rounded-full text-white flex items-center justify-center border border-white"
-            >{{ recipe?.likes.length }}</span
+            >{{ likeCount }}</span
           >
         </span>
-        <span class="relative">
+        <span class="relative" v-if="isAuthenticated">
           <Icon
             v-if="!is_bookmarked"
             name="material-symbols:bookmark-outline"
@@ -61,44 +61,67 @@
       <h2 class="font-bold text-lg">
         {{ recipe?.title }}
       </h2>
-      <p class="text-sm">{{ recipe?.description }}</p>
-      <NuxtRating :read-only="true" :ratingValue="0" class="text-lg" />
+      <p class="text-sm">{{ description }}</p>
+      <NuxtRating
+        :read-only="true"
+        :ratingValue="totalRating"
+        class="text-lg"
+      />
     </div>
-    <nuxt-link
-      class="flex gap-2 items-center p-4 mt-4 max-w-max hover:border-primary hover:text-primary"
-      :to="`/recipe/${recipe.id}`"
-      >Read more<svg
-        stroke="currentColor"
-        fill="currentColor"
-        stroke-width="0"
-        viewBox="0 0 16 16"
-        height="1em"
-        width="1em"
-        xmlns="http://www.w3.org/2000/svg"
+    <div class="flex justify-between items-center">
+      <nuxt-link
+        class="flex gap-1 items-center p-4 mt-4 max-w-max hover:border-primary hover:text-primary"
+        :to="`/recipe/${recipe.id}`"
+        >Read more<svg
+          stroke="currentColor"
+          fill="currentColor"
+          stroke-width="0"
+          viewBox="0 0 16 16"
+          height="1em"
+          width="1em"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <path
+            fill-rule="evenodd"
+            d="M14 2.5a.5.5 0 0 0-.5-.5h-6a.5.5 0 0 0 0 1h4.793L2.146 13.146a.5.5 0 0 0 .708.708L13 3.707V8.5a.5.5 0 0 0 1 0v-6z"
+          ></path></svg
+      ></nuxt-link>
+      <nuxt-link
+        v-if="from === 'my-recipes'"
+        :href="`/recipe/edit/${recipe.id}`"
+        class="flex gap-1 items-center p-4 mt-4 max-w-max text-neutral-600 hover:border-primary hover:text-primary"
       >
-        <path
-          fill-rule="evenodd"
-          d="M14 2.5a.5.5 0 0 0-.5-.5h-6a.5.5 0 0 0 0 1h4.793L2.146 13.146a.5.5 0 0 0 .708.708L13 3.707V8.5a.5.5 0 0 0 1 0v-6z"
-        ></path></svg
-    ></nuxt-link>
+        Edit
+        <Icon name="akar-icons:edit" size="22px" />
+      </nuxt-link>
+    </div>
   </div>
 </template>
 
 <script lang="ts" setup>
+import { toast } from "vue3-toastify";
+import { useAuthStore } from "~/store/auth";
 import { useUserStore } from "~/store/user";
-const {
-  likeRecipe,
-  unlikeRecipe,
-  bookmarkRecipe,
-  unbookmarkRecipe,
-  fetchRecipes,
-} = useRecipe();
+const { likeRecipe, unlikeRecipe, bookmarkRecipe, unbookmarkRecipe } =
+  useRecipe();
+
+const { isAuthenticated } = useAuthStore();
 
 const props = defineProps(["recipe", "from"]);
 const { user } = useUserStore();
+const description = ref("");
 const cover_image = ref("");
 const is_liked = ref(false);
 const is_bookmarked = ref(false);
+const likeCount = ref(0);
+
+if (props.recipe.description.length > 100)
+  description.value = props.recipe.description.substring(0, 100) + "...";
+else description.value = props.recipe.description;
+
+if (props.recipe.likes.length > 0) {
+  likeCount.value = props.recipe.likes.length;
+}
 
 if (props.recipe.images.length > 0) {
   props.recipe.images.forEach((image: any) => {
@@ -108,9 +131,9 @@ if (props.recipe.images.length > 0) {
   });
 }
 
-if (props.recipe.bookmarks && props.recipe.bookmarks.length > 0) {
-  props.recipe.bookmarks.forEach((bookmark: any) => {
-    if (bookmark.user_id === user.id) {
+if (user.bookmarks && user.bookmarks.length > 0) {
+  user.bookmarks.forEach((bookmark: any) => {
+    if (bookmark.recipe.id === props.recipe.id) {
       is_bookmarked.value = true;
     }
   });
@@ -142,7 +165,7 @@ const getBookmarkId = () => {
   let bookmark_id = "";
 
   if (user) {
-    props.recipe.bookmarks.forEach((bookmark: any) => {
+    user.bookmarks.forEach((bookmark: any) => {
       if (bookmark.user_id === user.id) {
         bookmark_id = bookmark.id;
       }
@@ -153,12 +176,22 @@ const getBookmarkId = () => {
 };
 
 const like = async (recipe_id: String) => {
+  if (!isAuthenticated) {
+    toast.info("Please login to like this recipe");
+    return;
+  }
   is_liked.value = true;
+  likeCount.value += 1;
   likeRecipe(recipe_id, user.id);
 };
 
 const unlike = async () => {
+  if (!isAuthenticated) {
+    toast.info("Please login to like this recipe");
+    return;
+  }
   is_liked.value = false;
+  likeCount.value -= 1;
   unlikeRecipe(getLikeId());
 };
 
@@ -175,4 +208,14 @@ const unbookmark = async () => {
   }
   unbookmarkRecipe(getBookmarkId());
 };
+const totalRating = ref(0);
+
+if (props.recipe.ratings && props.recipe.ratings.length > 0) {
+  console.log("total", props.recipe.ratings);
+  let total = 0;
+  props.recipe.ratings.forEach((rating: any) => {
+    total += rating.value;
+  });
+  totalRating.value = total / props.recipe.ratings.length;
+}
 </script>

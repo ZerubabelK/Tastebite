@@ -14,7 +14,7 @@
           />
           <span>Back</span>
         </button>
-        <NuxtLink to="/" class="flex gap-2 items-center my-10 w-fit">
+        <NuxtLink to="/" class="flex gap-2 items-center my-5 w-fit">
           <img
             src="~/assets/img/logo.webp"
             alt="Tastebite logo"
@@ -22,51 +22,52 @@
           />
           <h1 class="text-xl font-bold">Tastebite</h1>
         </NuxtLink>
-        <h1 class="text-3xl font-bold text-fourth">Create an account</h1>
-        <p class="text-sm">
-          Already have an account?
-          <NuxtLink to="/auth/login" class="text-primary text-lg"
-            >Sign in</NuxtLink
-          >
-        </p>
-        <form @submit.prevent="handleRegister" class="flex flex-col space-y-3">
-          <div class="space-y-3">
-            <label for="first_name">First name</label>
-            <div class="relative">
-              <Icon
-                name="fluent:person-28-regular"
-                size="26px"
-                class="absolute left-2 top-2 text-primary font-bold bg-white p-1"
-              />
-              <input
-                type="text"
-                placeholder="John"
-                id="first_name"
-                name="first_name"
-                v-model="first_name"
-                class="px-3 pl-10 min-w-[300px] py-2 focus:outline-none rounded-lg w-full bg-slate-100"
-              />
+
+        <form
+          @submit.prevent="handleRegister"
+          class="flex flex-col space-y-1.5"
+        >
+          <div class="grid grid-cols-2 gap-x-3">
+            <div class="space-y-1.5">
+              <label for="first_name">First name</label>
+              <div class="relative">
+                <Icon
+                  name="fluent:person-28-regular"
+                  size="26px"
+                  class="absolute left-2 top-2 text-primary font-bold bg-white p-1"
+                />
+                <input
+                  type="text"
+                  placeholder="John"
+                  id="first_name"
+                  name="first_name"
+                  v-bind="first_name"
+                  class="px-3 pl-10 py-2 focus:outline-none rounded-lg w-full bg-slate-100"
+                />
+              </div>
+              <p class="text-sm text-red-600">{{ errors.first_name }}</p>
+            </div>
+            <div class="space-y-1.5">
+              <label for="last_name">Last name</label>
+              <div class="relative">
+                <Icon
+                  name="fluent:person-28-regular"
+                  size="26px"
+                  class="absolute left-2 top-2 text-primary font-bold bg-white p-1"
+                />
+                <input
+                  type="text"
+                  placeholder="Doe"
+                  id="last_name"
+                  name="last_name"
+                  v-bind="last_name"
+                  class="px-3 pl-10 py-2 focus:outline-none rounded-lg w-full bg-slate-100"
+                />
+              </div>
+              <p class="text-sm text-red-600">{{ errors.last_name }}</p>
             </div>
           </div>
-          <div class="space-y-3">
-            <label for="last_name">Last name</label>
-            <div class="relative">
-              <Icon
-                name="fluent:person-28-regular"
-                size="26px"
-                class="absolute left-2 top-2 text-primary font-bold bg-white p-1"
-              />
-              <input
-                type="text"
-                placeholder="Doe"
-                id="last_name"
-                name="last_name"
-                v-model="last_name"
-                class="px-3 pl-10 min-w-[300px] py-2 focus:outline-none rounded-lg w-full bg-slate-100"
-              />
-            </div>
-          </div>
-          <div class="space-y-3">
+          <div class="space-y-1.5">
             <label for="username">Username</label>
             <div class="relative">
               <Icon
@@ -79,12 +80,13 @@
                 placeholder="Username"
                 id="username"
                 name="username"
-                v-model="username"
+                v-bind="username"
                 class="px-3 pl-10 min-w-[300px] py-2 focus:outline-none rounded-lg w-full bg-slate-100"
               />
             </div>
+            <p class="text-sm text-red-600">{{ errors.username }}</p>
           </div>
-          <div class="space-y-3">
+          <div class="space-y-1.5">
             <label for="username">Email</label>
             <div class="relative">
               <Icon
@@ -97,12 +99,13 @@
                 placeholder="Email"
                 id="email"
                 name="email"
-                v-model="email"
+                v-bind="email"
                 class="px-3 pl-10 min-w-[300px] py-2 focus:outline-none rounded-lg w-full bg-slate-100"
               />
             </div>
+            <p class="text-sm text-red-600">{{ errors.email }}</p>
           </div>
-          <div class="space-y-3">
+          <div class="space-y-1.5">
             <label for="password">Password</label>
             <div class="relative">
               <Icon
@@ -113,10 +116,30 @@
               <input
                 type="password"
                 placeholder="At least 6 characters long"
-                v-model="password"
+                v-bind="password"
+                name="password"
                 class="px-3 pl-10 min-w-[300px] py-2 focus:outline-none rounded-lg w-full bg-slate-100"
               />
             </div>
+            <p class="text-sm text-red-600">{{ errors.password }}</p>
+          </div>
+          <div class="space-y-1.5">
+            <label for="password">Confirm Password</label>
+            <div class="relative">
+              <Icon
+                name="mdi:password-outline"
+                size="26"
+                class="absolute left-2 top-2 text-primary font-light bg-white p-1"
+              />
+              <input
+                type="password"
+                placeholder="At least 6 characters long"
+                v-bind="confirm_password"
+                name="confirm_password"
+                class="px-3 pl-10 min-w-[300px] py-2 focus:outline-none rounded-lg w-full bg-slate-100"
+              />
+            </div>
+            <p class="text-sm text-red-600">{{ errors.confirm_password }}</p>
           </div>
           <button
             type="submit"
@@ -126,6 +149,12 @@
             <span v-else> Sign up </span>
           </button>
         </form>
+        <div class="flex justify-center items-center mt-5">
+          <span class="text-sm">Already have an account?</span>
+          <NuxtLink to="/auth/login" class="text-primary ml-1">
+            Login
+          </NuxtLink>
+        </div>
       </div>
     </div>
     <div
@@ -148,30 +177,36 @@ definePageMeta({
 });
 
 const { register } = useAuth();
-const first_name = ref("");
-const last_name = ref("");
-const email = ref("");
-const username = ref("");
-const password = ref("");
+
+const { defineInputBinds, handleSubmit, errors } = useForm({
+  validationSchema: registerSchema,
+});
+
+const first_name = defineInputBinds("first_name");
+const last_name = defineInputBinds("last_name");
+const email = defineInputBinds("email");
+const username = defineInputBinds("username");
+const password = defineInputBinds("password");
+const confirm_password = defineInputBinds("confirm_password");
 
 const pending = ref(false);
 
-const handleRegister = () => {
+const handleRegister = handleSubmit((values) => {
   pending.value = true;
   register({
-    email: email.value,
-    password: password.value,
-    first_name: first_name.value,
-    last_name: last_name.value,
-    username: username.value,
+    email: values.email,
+    password: values.password,
+    first_name: values.first_name,
+    last_name: values.last_name,
+    username: values.username,
   })
     .then(() => {
       pending.value = false;
     })
-    .catch(() => {
+    .catch((err) => {
       pending.value = false;
     });
-};
+});
 
 const authStore = useAuthStore();
 

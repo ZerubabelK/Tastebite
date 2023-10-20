@@ -8,4 +8,6 @@ export default defineNuxtPlugin(async (nuxtApp: any) => {
   await auth.boot(nuxtApp.ssrContext.event);
   const user = useUserStore();
   await user.boot(nuxtApp.ssrContext.event);
+  // nuxtApp.provide("auth", auth);
+  // nuxtApp.provide("user", user);
 });

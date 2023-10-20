@@ -112,6 +112,7 @@ export default function () {
           },
           cache: true,
         });
+        console.log(dt, error);
         if (status.value === "success") {
           store.setToken(token);
           setUser(dt.value!.user_by_pk);

@@ -3,9 +3,9 @@
     class="w-screen min-h-screen grid md:grid-cols-2 grid-cols-1 items-center"
   >
     <div
-      class="rounded-lg h-full flex justify-center items-center w-full px-10"
+      class="rounded-lg h-full flex justify-center md:items-center w-full px-10"
     >
-      <div class="w-full max-w-[400px] mx-auto">
+      <div class="w-full max-w-[400px] mx-auto md:mt-0 mt-16">
         <button class="flex items-center gap-1" @click="goBack">
           <Icon
             name="solar:arrow-left-linear"
@@ -14,7 +14,7 @@
           />
           <span>Back</span>
         </button>
-        <NuxtLink to="/" class="flex gap-2 items-center my-10 w-fit">
+        <NuxtLink to="/" class="flex gap-2 items-center md:my-10 my-5 w-fit">
           <img
             src="~/assets/img/logo.webp"
             alt="Tastebite logo"
@@ -23,12 +23,7 @@
           <h1 class="text-xl font-bold">Tastebite</h1>
         </NuxtLink>
         <h1 class="text-3xl font-bold text-fourth">Welcome back</h1>
-        <p class="text-sm">
-          New to Tastebite?
-          <NuxtLink to="/auth/register" class="text-primary text-lg"
-            >Create an account</NuxtLink
-          >
-        </p>
+
         <form @submit.prevent="handleLogin" class="flex flex-col space-y-3">
           <div class="space-y-3">
             <label for="username">Username</label>
@@ -43,10 +38,11 @@
                 placeholder="Username"
                 id="username"
                 name="username"
-                v-model="username"
+                v-bind="username"
                 class="px-3 pl-10 max-w-[400px] py-2 focus:outline-none rounded-lg w-full bg-slate-100"
               />
             </div>
+            <p class="text-sm text-red-600">{{ errors.username }}</p>
           </div>
           <div class="space-y-3">
             <label for="password">Password</label>
@@ -59,10 +55,11 @@
               <input
                 type="password"
                 placeholder="At least 6 characters long"
-                v-model="password"
+                v-bind="password"
                 class="px-3 pl-10 max-w-[400px] py-2 focus:outline-none rounded-lg w-full bg-slate-100"
               />
             </div>
+            <p class="text-sm text-red-600">{{ errors.password }}</p>
           </div>
           <button
             type="submit"
@@ -73,6 +70,12 @@
             <span v-else> Sign in </span>
           </button>
         </form>
+        <div class="flex justify-center items-center mt-5">
+          <span class="text-fourth">Don't have an account?</span>
+          <NuxtLink to="/auth/register" class="text-primary ml-1">
+            Sign up
+          </NuxtLink>
+        </div>
       </div>
     </div>
     <div
@@ -94,21 +97,32 @@ definePageMeta({
   layout: "auth",
 });
 
+import { useForm } from "vee-validate";
+import { loginSchema } from "@/utils/validation-schema";
+
+const { errors, handleSubmit, defineInputBinds } = useForm({
+  validationSchema: loginSchema,
+});
+
+// const userField = defineInputBinds("username");
+// const passwordField = defineInputBinds("password");
+
 const { login, errorMessage } = useAuth();
-const username = ref("");
-const password = ref("");
+const username = defineInputBinds("username");
+const password = defineInputBinds("password");
 const pending = ref<boolean>(false);
 
-const handleLogin = () => {
+const handleLogin = handleSubmit((values: any) => {
   pending.value = true;
-  login(username.value, password.value)
+
+  login(values.username, values.password)
     .then(() => {
       pending.value = false;
     })
     .catch(() => {
       pending.value = false;
     });
-};
+});
 
 const authStore = useAuthStore();
 

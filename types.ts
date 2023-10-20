@@ -11,4 +11,5 @@ export interface User {
   profile_image: string;
   created_at: string;
   updated_at: string;
+  bookmarks: Object[];
 }

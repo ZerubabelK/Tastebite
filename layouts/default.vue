@@ -4,6 +4,7 @@
     <div>
       <slot />
     </div>
+    <Footer />
     <div
       v-if="isScrolled"
       class="fixed bottom-8 right-6 block transition-all duration-300 ease-in-out"
@@ -14,7 +15,7 @@
         fill="currentColor"
         stroke-width="0"
         viewBox="0 0 24 24"
-        class="animate-bounce text-5xl bg-primary rounded-full shadow shadow-primaryLight cursor-pointer text-light p-3"
+        class="animate-bounce text-5xl bg-primary rounded-full shadow shadow-primaryLight cursor-pointer text-white p-3"
         height="1em"
         width="1em"
         xmlns="http://www.w3.org/2000/svg"
@@ -27,6 +28,9 @@
 </template>
 
 <script lang="ts" setup>
+import { storeToRefs } from "pinia";
+import { useUserStore } from "~/store/user";
+
 const scrollY = ref(0);
 const scrollHandler = () => {
   scrollY.value = window.scrollY;

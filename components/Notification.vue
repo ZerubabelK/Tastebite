@@ -49,18 +49,38 @@
 import { storeToRefs } from "pinia";
 import { useUserStore } from "~/store/user";
 import { User } from "~/types";
+import { useWebNotification } from "@vueuse/core";
+
+const showNotificationBar = (message: string, title: string) => {
+  const { show } = useWebNotification({
+    title,
+    body: message,
+    icon: "/favicon.webp",
+  });
+  show();
+};
 
 const { readNotification, getUserNotifications } = useUser();
 
 const showNotification = ref(false);
 
-const { notifications } = storeToRefs(useUserStore());
+const { notifications, error } = storeToRefs(useUserStore());
 const { user } = defineProps({
   user: {
     type: Object as PropType<User>,
     required: true,
   },
 });
+
+watch(
+  notifications,
+  (newVal: any[]) => {
+    if (newVal.length > 0) {
+      showNotificationBar(newVal[0].message, "Tastebite notification");
+    }
+  },
+  { immediate: true }
+);
 
 const handleNotifcationRead = (id: string) => {
   readNotification(id);

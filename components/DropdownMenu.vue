@@ -69,6 +69,13 @@
         >
           Saved Recipe
         </nuxt-link>
+        <nuxt-link
+          to="/user/recipes"
+          class="block px-4 py-3 text-sm text-neutral-600 capitalize transition-colors duration-200 transform hover:bg-gray-100"
+          @click="toggleMenu"
+        >
+          My Recipes
+        </nuxt-link>
 
         <!-- <nuxt-link
           to="/user/profile/setting"
